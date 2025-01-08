@@ -29,7 +29,7 @@ This project aims to create a YouTube clone with all the core functionalities of
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/youtube-clone.git
+    git clone https://github.com/Deba00407/youtube-clone.git
     ```
 2. Navigate to the project directory:
     ```sh
