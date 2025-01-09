@@ -16,3 +16,9 @@ connectDB().then(() => {
         console.log(`Server is running on port ${process.env.PORT || 5001}`)
     })
 }).catch(err => console.log('Error connecting to database', err));
+
+
+// Routing
+import userRouter from './routes/user.routes.js';
+
+app.use('/api/v1/users', userRouter);
