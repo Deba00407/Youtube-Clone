@@ -1,11 +1,11 @@
-import { ApiError } from "../utils/apiError";
-import asyncHandler from "../utils/asyncHandler";
+import { ApiError } from "../utils/apiError.js";
+import asyncHandler from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 import accessDetails from "../../config.js"
 import { User } from "../models/user.models.js";
 
 // req has access to all cookies due to cookie-parser middleware
-export const verifyJWT = asyncHandler(async (req, res, next) => {
+const verifyJWT = asyncHandler(async (req, res, next) => {
     try {
         const accessToken = req.cookies?.accessToken || req.header("Authorization")?.split(" ")[1];
 
@@ -27,3 +27,5 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
         throw new ApiError({ statusCode: 401, message: "Invalid access token" });
     }
 });
+
+export default verifyJWT;

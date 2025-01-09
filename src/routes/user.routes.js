@@ -17,5 +17,6 @@ router.route('/login').post(userFunctions.loginUser);
 
 // Secured routes
 router.route('/logout').post(userVerification, userFunctions.logoutUser);
+router.route('/refresh-token').post(userFunctions.refreshAccessToken);
 
 export default router;

@@ -2,7 +2,7 @@ class ApiResponse {
     constructor({
         statusCode = 200,
         success = true,
-        data = {},
+        data = null,
         message = 'Success',
         errors = null
     }) {
