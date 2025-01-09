@@ -1,6 +1,7 @@
 import userFunctions from '../controllers/user.controller.js';
 import { Router } from 'express';
 import { upload } from '../middlewares/multer.middleware.js'
+import userVerification from '../middlewares/auth.middlewares.js'
 
 const router = Router();
 
@@ -11,5 +12,10 @@ router.route('/register').post(
     ])
     , userFunctions.registerUser
 );
+
+router.route('/login').post(userFunctions.loginUser);
+
+// Secured routes
+router.route('/logout').post(userVerification, userFunctions.logoutUser);
 
 export default router;

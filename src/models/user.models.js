@@ -29,7 +29,8 @@ const userSchema = new Schema({
         default: "https://res.cloudinary.com/dxrwmpshz/image/upload/v1734632724/dcb0sqppyq3o07i0w3ib.png"
     },
     coverImage: {
-        type: String
+        type: String,
+        default: "https://res.cloudinary.com/dxrwmpshz/image/upload/v1736430970/black-background.jpg"
     },
     watchHistory: {
         type: [Schema.Types.ObjectId],
