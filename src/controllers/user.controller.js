@@ -15,7 +15,7 @@ class UserFunctions {
                 return field?.trim() === ""
             })
         ) {
-            throw new ApiError(400, 'All fields are required')
+            throw new ApiError({ statusCode: 400, message: "All fields are required" })
         }
 
         // Searching for exisiting user by the same username or email
@@ -23,7 +23,7 @@ class UserFunctions {
             $or: [{ username }, { email }]
         })
         if (exisitingUser) {
-            throw new ApiError(400, 'User already exists')
+            throw new ApiError({statusCode: 400, message: "User already exists"})
         }
 
         // File handling
@@ -53,16 +53,18 @@ class UserFunctions {
         // Checking if user is created
         const createdUser = await User.findById(user._id).select("-password -refreshToken")
         if (!createdUser) {
-            throw new ApiError(500, 'User not created')
+            throw new ApiError({statusCode: 500, message: "User not created"})
         }
 
         return res.status(201).json(
             new ApiResponse({
                 data: createdUser,
-                message: 'User registered successfully'
+                message: "User registered successfully"
             })
         );
     })
+
+    
 }
 
 const userFunctions = new UserFunctions();

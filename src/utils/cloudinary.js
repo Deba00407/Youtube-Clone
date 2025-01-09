@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import details from '../../config.js'
+import fs from 'fs';
 
 cloudinary.config({
     cloud_name: details.cloudinaryCloudName,
@@ -19,11 +20,13 @@ const uploadOnCloudinary = async (localFilePath) => {
         })
 
         if (uploadResponse) {
-            console.log('Image uploaded to cloudinary');
+            fs.unlinkSync(localFilePath);
             return uploadResponse;
         }
+
     } catch (error) {
         console.log(`Error uploading image to cloudinary: ${error}`);
+        fs.unlinkSync(localFilePath);
         return null;
     }
 }
