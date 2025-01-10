@@ -5,6 +5,7 @@ import { User } from '../models/user.models.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import jwt from 'jsonwebtoken';
 import details from '../../config.js';
+import bcrypt from 'bcrypt';
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -194,6 +195,44 @@ class UserFunctions {
         } catch (error) {
             throw new ApiError({ statusCode: 401, message: "Invalid refresh token" })
         }
+    })
+
+    updatePassword = asyncHandler(async (req, res) => {
+        const id = req.user?.id;
+        const { oldPassword, newPassword } = req.body;
+
+        if (!id) {
+            throw new ApiError({ statusCode: 400, message: "User id is missing" })
+        }
+
+        // checking if the new password is empty string
+        if (
+            [oldPassword, newPassword].some((field) => { return field?.trim() === "" })
+        ) {
+            throw new ApiError({ statusCode: 400, message: "All fields are required" })
+        }
+
+        const existingUser = await User.findById(id)
+        if (!existingUser) {
+            throw new ApiError({ statusCode: 404, message: "User not found" })
+        }
+
+        // Checking if the old password is correct
+        const isPasswordValid = await existingUser.checkPassword(oldPassword)
+        if (!isPasswordValid) {
+            throw new ApiError({ statusCode: 401, message: "Old password is incorrect" })
+        }
+
+        // Updating the password
+        existingUser.password = newPassword;
+        await existingUser.save({ validateBeforeSave: false });
+
+        return res.status(200)
+            .json(
+                new ApiResponse({
+                    message: "Password updated successfully"
+                })
+            )
     })
 }
 
