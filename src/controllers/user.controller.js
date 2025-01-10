@@ -5,7 +5,6 @@ import { User } from '../models/user.models.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import jwt from 'jsonwebtoken';
 import details from '../../config.js';
-import bcrypt from 'bcrypt';
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -233,6 +232,14 @@ class UserFunctions {
                     message: "Password updated successfully"
                 })
             )
+    })
+
+    getUserDetails = asyncHandler(async (req, res) => {
+        const user = req.user;
+        res.status(200).json(new ApiResponse({
+            data: user,
+            message: "User details fetched successfully",
+        }))
     })
 }
 
