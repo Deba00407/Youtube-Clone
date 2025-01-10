@@ -2,7 +2,7 @@ import asyncHandler from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/apiError.js'
 import { ApiResponse } from '../utils/apiResponse.js'
 import { User } from '../models/user.models.js';
-import { uploadOnCloudinary } from '../utils/cloudinary.js';
+import { uploadOnCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
 import jwt from 'jsonwebtoken';
 import details from '../../config.js';
 
@@ -247,27 +247,38 @@ class UserFunctions {
         const avatarLocalPath = req.file?.path;
 
         if (!avatarLocalPath) {
-            throw new ApiError({ statusCode: 400, message: "Avatar is required" })
+            throw new ApiError({ statusCode: 400, message: "Avatar file is missing" })
         }
 
         const avatar = await uploadOnCloudinary(avatarLocalPath);
 
-        if (!avatar.url) {
-            throw new ApiError({ statusCode: 500, message: "Error uploading avatar on cloudinary" })
+        const user = await User.findById(id).select("-password -refreshToken");
+
+        if (!user) {
+            throw new ApiError({ statusCode: 404, message: "User not found" })
+        }
+        // If user is updating from the default avatar
+        if (user.avatar == details.defaultAvatar) {
+            user.avatar = avatar.url;
+            await user.save({ validateBeforeSave: false });
         }
 
-        const updatedUser = await User.findByIdAndUpdate(id,
-            { $set: { avatar: avatar.url } },
-            { new: true }
-        ).select("-password -refreshToken");
-
-        if (!updatedUser) {
-            throw new ApiError({ statusCode: 500, message: "Error updating avatar" })
+        // If user is updating from a custom avatar
+        else {
+            const publicId = user.avatar.split("/").pop().split(".")[0];
+            const deleteResponse = await deleteFromCloudinary(publicId);
+            if (deleteResponse) {
+                user.avatar = avatar.url;
+                await user.save({ validateBeforeSave: false });
+            }
+            else {
+                throw new ApiError({ statusCode: 500, message: "Error updating avatar" })
+            }
         }
 
         return res.status(200).json(
             new ApiResponse({
-                data: updatedUser,
+                data: user,
                 message: "Avatar updated successfully"
             })
         )
@@ -278,26 +289,36 @@ class UserFunctions {
         const coverImageLocalPath = req.file?.path;
 
         if (!coverImageLocalPath) {
-            throw new ApiError({ statusCode: 400, message: "Cover Image file is missing" })
+            throw new ApiError({ statusCode: 400, message: "Cover image file is missing" })
         }
 
         const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
-        if (!coverImage.url) {
-            throw new ApiError({ statusCode: 500, message: "Error uploading cover image on cloudinary" })
-        }
-
-        const user = await User.findByIdAndUpdate(
-            id,
-            { $set: { coverImage: coverImage.url } },
-            { new: true }
-        ).select("-password -refreshToken");
+        const user = await User.findById(id).select("-password -refreshToken");
 
         if (!user) {
-            throw new ApiError({ statusCode: 500, message: "Error updating cover image" })
+            throw new ApiError({ statusCode: 404, message: "User not found" })
+        }
+        // If user is updating from the default cover image
+        if (user.coverImage == details.defaultCoverImage) {
+            user.coverImage = coverImage.url;
+            await user.save({ validateBeforeSave: false });
         }
 
-        res.status(200).json(
+        // If user is updating from a custom cover image
+        else {
+            const publicId = user.coverImage.split("/").pop().split(".")[0];
+            const deleteResponse = await deleteFromCloudinary(publicId);
+            if (deleteResponse) {
+                user.coverImage = coverImage.url;
+                await user.save({ validateBeforeSave: false });
+            }
+            else {
+                throw new ApiError({ statusCode: 500, message: "Error updating cover image" })
+            }
+        }
+
+        return res.status(200).json(
             new ApiResponse({
                 data: user,
                 message: "Cover image updated successfully"

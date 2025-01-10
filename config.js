@@ -8,7 +8,9 @@ const details = {
     refreshTokenExpiry: process.env.REFRESH_TOKEN_EXPIRY,
     cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME,
     cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
-    cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET
+    cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET,
+    defaultAvatar: process.env.DEFAULT_USER_AVATAR,
+    defaultCoverImage: process.env.DEFAULT_USER_COVER_IMAGE
 };
 
 export default details;
