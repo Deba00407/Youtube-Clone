@@ -155,7 +155,7 @@ class UserFunctions {
     })
 
     refreshAccessToken = asyncHandler(async (req, res) => {
-        const { incomingRefreshToken } = req.cookies || req.body.refreshToken;
+        const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
         if (!incomingRefreshToken) {
             throw new ApiError({ statusCode: 400, message: "Refresh token is required" })
