@@ -5,6 +5,7 @@ import { User } from '../models/user.models.js';
 import { uploadOnCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
 import jwt from 'jsonwebtoken';
 import details from '../../config.js';
+import mongoose from 'mongoose';
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -324,6 +325,133 @@ class UserFunctions {
                 message: "Cover image updated successfully"
             })
         )
+    })
+
+    getUserChannelProfile = asyncHandler(async (req, res) => {
+        const { username } = req.params;
+
+        if (!username?.trim()) {
+            throw new ApiError({ statusCode: 400, message: "Username is required" })
+        }
+
+        // Writing aggregation pipelines
+        const channel = await User.aggregate([
+            {
+                $match: {
+                    username: username?.toLowerCase() // Filtering out channel based on  username
+                }
+            },
+            {
+                $lookup: {
+                    from: "subscriptions",
+                    localField: "_id",
+                    foreignField: "channel", // Finding channel subsribers
+                    as: "subscribers"
+                }
+            },
+            {
+                $lookup: {
+                    from: "subscriptions",
+                    localField: "_id",
+                    foreignField: "subscriber", // Finding channel subscriptions
+                    as: "subscribedTo"
+                }
+            },
+            {
+                $addFields: {
+                    subscribersCount: { $size: "$subscribers" }, // Evaluating
+                    subscribedToCount: { $size: "$subscribedTo" },
+
+                    isSubscribed: { // Checking if the current user is subscribed to the channel
+                        $cond: {
+                            if: {
+                                $in: [req.user?.id, "$subscribers.subscriber"]
+                            },
+                            then: true,
+                            else: false
+                        }
+                    }
+                }
+            },
+            { // Deselecting sensitive fields before sending the response
+                $project: {
+                    fullname: 1,
+                    username: 1,
+                    subscribersCount: 1,
+                    subscribedToCount: 1,
+                    avatar: 1,
+                    coverImage: 1,
+                    isSubscribed: 1
+                }
+            }
+        ])
+
+        if (channel.length === 0) {
+            throw new ApiError({ statusCode: 404, message: "Channel not found" })
+        }
+
+        return res.status(200).json(
+            new ApiResponse({
+                data: channel[0],
+                message: "Channel details fetched successfully"
+            })
+        )
+    })
+
+    getUserWatchHistory = asyncHandler(async (req, res) => {
+        // We cant directly pass the user id from req.user as it is a string and we need to convert it to ObjectId
+
+        const user = await User.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(`${req.user?.id}`)
+                }
+            },
+            {
+                $lookup: {
+                    from: "videos",
+                    localField: "watchHistory",
+                    foreignField: "_id",
+                    as: "watchHistory",
+
+                    // Nested lookup
+                    pipeline: [
+                        {
+                            // Getting owner details of the video watched
+                            $lookup: {
+                                from: "users",
+                                localField: "owner",
+                                foreignField: "_id",
+                                as: "owner",
+                                pipeline: [
+                                    {
+                                        $project: {
+                                            fullname: 1,
+                                            username: 1,
+                                            avatar: 1
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+
+                        {
+                            $addFields: {
+                                owner: { $arrayElemAt: ["$owner", 0] }
+                            }
+                        }
+                    ]
+                }
+            }
+        ])
+
+        return res.status(200).json(
+            new ApiResponse({
+                data: user[0].watchHistory,
+                message: "Watch history fetched successfully"
+            })
+        )
+
     })
 }
 

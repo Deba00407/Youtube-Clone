@@ -25,4 +25,7 @@ router.route('/update-avatar').post(userVerification, upload.single('avatar'), u
 
 router.route('/update-cover-image').post(userVerification, upload.single('coverImage'), userFunctions.updateCoverImage);
 
+router.route('/:username').get(userVerification, userFunctions.getUserChannelProfile)
+
+router.route('/watchHistory').get(userVerification, userFunctions.getUserWatchHistory)
 export default router;
