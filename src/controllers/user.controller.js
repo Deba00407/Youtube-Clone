@@ -133,7 +133,9 @@ class UserFunctions {
         const { id } = req.user.id;
         await User.findByIdAndUpdate(id,
             {
-                $set: { refreshToken: "" },
+                $unset: {
+                    refreshToken: 1
+                },
             },
             { new: true }
         )
