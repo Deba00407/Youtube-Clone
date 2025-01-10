@@ -241,6 +241,69 @@ class UserFunctions {
             message: "User details fetched successfully",
         }))
     })
+
+    updateAvatar = asyncHandler(async (req, res) => {
+        const id = req.user?.id;
+        const avatarLocalPath = req.file?.path;
+
+        if (!avatarLocalPath) {
+            throw new ApiError({ statusCode: 400, message: "Avatar is required" })
+        }
+
+        const avatar = await uploadOnCloudinary(avatarLocalPath);
+
+        if (!avatar.url) {
+            throw new ApiError({ statusCode: 500, message: "Error uploading avatar on cloudinary" })
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(id,
+            { $set: { avatar: avatar.url } },
+            { new: true }
+        ).select("-password -refreshToken");
+
+        if (!updatedUser) {
+            throw new ApiError({ statusCode: 500, message: "Error updating avatar" })
+        }
+
+        return res.status(200).json(
+            new ApiResponse({
+                data: updatedUser,
+                message: "Avatar updated successfully"
+            })
+        )
+    })
+
+    updateCoverImage = asyncHandler(async (req, res) => {
+        const id = req.user?.id;
+        const coverImageLocalPath = req.file?.path;
+
+        if (!coverImageLocalPath) {
+            throw new ApiError({ statusCode: 400, message: "Cover Image file is missing" })
+        }
+
+        const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+
+        if (!coverImage.url) {
+            throw new ApiError({ statusCode: 500, message: "Error uploading cover image on cloudinary" })
+        }
+
+        const user = await User.findByIdAndUpdate(
+            id,
+            { $set: { coverImage: coverImage.url } },
+            { new: true }
+        ).select("-password -refreshToken");
+
+        if (!user) {
+            throw new ApiError({ statusCode: 500, message: "Error updating cover image" })
+        }
+
+        res.status(200).json(
+            new ApiResponse({
+                data: user,
+                message: "Cover image updated successfully"
+            })
+        )
+    })
 }
 
 const userFunctions = new UserFunctions();

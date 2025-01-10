@@ -21,4 +21,8 @@ router.route('/refresh-token').post(userFunctions.refreshAccessToken);
 router.route('/update-password').post(userVerification, userFunctions.updatePassword);
 router.route('/userProfile').get(userVerification, userFunctions.getUserDetails);
 
+router.route('/update-avatar').post(userVerification, upload.single('avatar'), userFunctions.updateAvatar);
+
+router.route('/update-cover-image').post(userVerification, upload.single('coverImage'), userFunctions.updateCoverImage);
+
 export default router;
