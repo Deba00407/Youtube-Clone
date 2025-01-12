@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import connectDB from './db/db.connection.js'
 import { app } from './app.js';
 
+
 // Load Environment Variables
 dotenv.config({
     path: './.env'
@@ -20,5 +21,7 @@ connectDB().then(() => {
 
 // Routing
 import userRouter from './routes/user.routes.js';
+import tweetRouter from './routes/tweet.routes.js';
 
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/tweets', tweetRouter);
