@@ -16,12 +16,13 @@ const playlistSchema = new mongoose.Schema({
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Video"
-        }
+        },
     ],
 
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
+        ref: "User",
+        required: true
     }
 });
 
