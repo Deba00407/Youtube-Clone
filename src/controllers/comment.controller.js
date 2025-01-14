@@ -3,21 +3,21 @@ import asyncHandler from "../utils/asyncHandler.js";
 import Comment from "../models/comment.models.js"
 import { ApiResponse } from "../utils/apiResponse.js";
 import Video from "../models/video.models.js";
-import { mongo } from "mongoose";
+import mongoose from "mongoose";
 
 
 class CommentFunctions {
     addComment = asyncHandler(async (req, res) => {
         const { videoID } = req.params;
-        const { comment } = req.body;
+        const { content } = req.body;
 
-        if (comment?.trim() === "") {
+        if (content?.trim() === "") {
             throw new ApiError({ statusCode: 400, message: "Comment cannot be empty" });
         }
 
         // Add comment to database
         const newComment = await Comment.create({
-            content: comment.trim(),
+            content: content.trim(),
             owner: req.user.id,
             video: videoID
         })
@@ -41,15 +41,15 @@ class CommentFunctions {
 
     updateComment = asyncHandler(async (req, res) => {
         const { commentID } = req.params;
-        const { comment } = req.body;
+        const { content } = req.body;
 
-        if (comment?.trim() === "") {
+        if (content?.trim() === "") {
             throw new ApiError({ statusCode: 400, message: "Comment cannot be empty" });
         }
 
         const updatedComment = await Comment.findByIdAndUpdate(
             commentID,
-            { content: comment.trim() },
+            { content: content.trim() },
             { new: true }
         );
 
@@ -86,13 +86,9 @@ class CommentFunctions {
         const page = parseInt(req.query.page, 10) || 1;
         const limit = parseInt(req.query.limit, 10) || 30;
 
-        // Validate videoID
-        if (!mongo.Types.ObjectId.isValid(videoID)) {
-            throw new ApiError({ statusCode: 400, message: "Invalid video ID" });
-        }
 
         const comments = await Video.aggregate([
-            { $match: { _id: mongo.Types.ObjectId(`${videoID}`) } },
+            { $match: { _id: new mongoose.Types.ObjectId(`${videoID}`) } },
             {
                 $lookup: {
                     from: "comments",

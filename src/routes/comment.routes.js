@@ -10,6 +10,6 @@ router.use(userVerification);
 // Add a comment and get all comments for a video
 router.route("/:videoID").post(upload.none(), commentFunctions.addComment).get(commentFunctions.getAllVideoComments);
 
-router.route("/comments/:commentID").patch(upload.none(), commentFunctions.updateComment).delete(commentFunctions.deleteComment);
+router.route("/:commentID").patch(upload.none(), commentFunctions.updateComment).delete(commentFunctions.deleteComment);
 
 export default router;
